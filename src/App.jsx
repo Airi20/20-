@@ -39,6 +39,17 @@ export default function Slide12() {
 
   const sum = selected.reduce((acc, idx) => acc + (board[idx] || 0), 0);
 
+  // prevent scroll on mobile
+  useEffect(() => {
+    const preventScroll = (e) => e.preventDefault();
+    document.body.style.overflow = "hidden";
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("touchmove", preventScroll);
+    };
+  }, []);
+
   useEffect(() => {
     if (timeLeft <= 0) {
       setGameOver(true);
@@ -79,7 +90,16 @@ export default function Slide12() {
       setScore(score + selected.length);
       setSelected([]);
       setMessage("✨ナイス12✨");
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+      // 振動（対応していれば）
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        try {
+          navigator.vibrate([100, 50, 100]);
+        } catch (e) {
+          console.warn("Vibration not supported");
+        }
+      }
+
       setTimeout(() => setMessage(""), 2000);
     } else {
       setSelected([]);
@@ -105,59 +125,70 @@ export default function Slide12() {
 
   if (gameOver) {
     return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>⏰ 時間切れ！</h2>
-        <p style={styles.text}>あなたのスコアは <strong>{score}</strong> 点！</p>
-        <button onClick={handleRestart} style={styles.button}>もう一回！</button>
+      <div style={styles.wrapper}>
+        <div style={styles.container}>
+          <h2 style={styles.title}>⏰ 時間切れ！</h2>
+          <p style={styles.text}>あなたのスコアは <strong>{score}</strong> 点！</p>
+          <button onClick={handleRestart} style={styles.button}>もう一回！</button>
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      style={styles.container}
+      style={styles.wrapper}
       onMouseUp={handleEnd}
       onTouchEnd={handleEnd}
       onTouchMove={handleTouchMove}
     >
-      <h2 style={styles.title}>合計12を作れ🎯</h2>
-      <div style={styles.grid} onContextMenu={(e) => e.preventDefault()}>
-        {board.map((num, idx) => (
-          <div
-            key={idx}
-            data-idx={idx}
-            onMouseDown={() => handleStart(idx)}
-            onMouseEnter={() => handleEnter(idx)}
-            onTouchStart={() => handleStart(idx)}
-            style={{
-              ...styles.cell,
-              backgroundColor: selected.includes(idx) ? "#ff6b81" : "#1e90ff",
-            }}
-          >
-            {num}
-          </div>
-        ))}
-      </div>
-      <div style={styles.info}>合計: <strong>{sum}</strong> ／ スコア: <strong>{score}</strong></div>
-      <div
-        style={{
-          ...styles.info,
-          color: timeLeft <= 10 ? "#ff4757" : "#2f3542",
-        }}
-      >
-        残り時間: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
-      </div>
-      <div style={{ marginTop: 10, fontWeight: "bold", color: "#2f3542" }}>
-        {message}
+      <div style={styles.container}>
+        <h2 style={styles.title}>合計12を作れ🎯</h2>
+        <div style={styles.grid} onContextMenu={(e) => e.preventDefault()}>
+          {board.map((num, idx) => (
+            <div
+              key={idx}
+              data-idx={idx}
+              onMouseDown={() => handleStart(idx)}
+              onMouseEnter={() => handleEnter(idx)}
+              onTouchStart={() => handleStart(idx)}
+              style={{
+                ...styles.cell,
+                backgroundColor: selected.includes(idx) ? "#ff6b81" : "#1e90ff",
+              }}
+            >
+              {num}
+            </div>
+          ))}
+        </div>
+        <div style={styles.info}>合計: <strong>{sum}</strong> ／ スコア: <strong>{score}</strong></div>
+        <div
+          style={{
+            ...styles.info,
+            color: timeLeft <= 10 ? "#ff4757" : "#2f3542",
+          }}
+        >
+          残り時間: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+        </div>
+        <div style={{ marginTop: 10, fontWeight: "bold", color: "#2f3542" }}>
+          {message}
+        </div>
       </div>
     </div>
   );
 }
 
 const styles = {
+  wrapper: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f1f2f6",
+  },
   container: {
-    maxWidth: 360,
-    margin: "40px auto",
+    width: "90%",
+    maxWidth: 400,
     padding: 20,
     border: "2px solid #ccc",
     borderRadius: 12,
