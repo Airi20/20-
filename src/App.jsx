@@ -44,7 +44,7 @@ export default function Slide12() {
       setGameOver(true);
       return;
     }
-    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+    const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
     return () => clearTimeout(timer);
   }, [timeLeft]);
 
@@ -66,7 +66,7 @@ export default function Slide12() {
     if (!selectingRef.current || selected.includes(idx)) return;
     const lastIdx = selected[selected.length - 1];
     if (isAdjacent(lastIdx, idx)) {
-      setSelected((prev) => [...prev, idx]);
+      setSelected([...selected, idx]);
     }
   };
 
@@ -74,23 +74,15 @@ export default function Slide12() {
     selectingRef.current = false;
     if (sum === 12 && selected.length > 0) {
       const newBoard = [...board];
-      selected.forEach((idx) => {
-        newBoard[idx] = Math.floor(Math.random() * 9) + 1;
-      });
+      selected.forEach((idx) => (newBoard[idx] = Math.floor(Math.random() * 9) + 1));
       setBoard(newBoard);
-      setScore((prev) => prev + selected.length);
+      setScore(score + selected.length);
+      setSelected([]);
       setMessage("✨ナイス12✨");
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       setTimeout(() => setMessage(""), 2000);
-    }
-    setSelected([]);
-  };
-
-  const handleTouchMove = (e) => {
-    const touch = e.touches[0];
-    const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (element?.dataset?.idx) {
-      handleEnter(Number(element.dataset.idx));
+    } else {
+      setSelected([]);
     }
   };
 
@@ -99,16 +91,24 @@ export default function Slide12() {
     setSelected([]);
     setScore(0);
     setTimeLeft(TIMER_SECONDS);
-    setMessage("");
     setGameOver(false);
+    setMessage("");
+  };
+
+  const handleTouchMove = (e) => {
+    const touch = e.touches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (target && target.dataset?.idx) {
+      handleEnter(Number(target.dataset.idx));
+    }
   };
 
   if (gameOver) {
     return (
       <div style={styles.container}>
-        <h2>⏰ ゲーム終了！</h2>
-        <p>あなたのスコア：<strong>{score}</strong>点</p>
-        <button onClick={handleRestart} style={styles.button}>もう一度遊ぶ</button>
+        <h2 style={styles.title}>⏰ 時間切れ！</h2>
+        <p style={styles.text}>あなたのスコアは <strong>{score}</strong> 点！</p>
+        <button onClick={handleRestart} style={styles.button}>もう一回！</button>
       </div>
     );
   }
@@ -120,8 +120,8 @@ export default function Slide12() {
       onTouchEnd={handleEnd}
       onTouchMove={handleTouchMove}
     >
-      <h2>数字をつなげて「12」を作れ！</h2>
-      <div style={styles.grid}>
+      <h2 style={styles.title}>合計12を作れ🎯</h2>
+      <div style={styles.grid} onContextMenu={(e) => e.preventDefault()}>
         {board.map((num, idx) => (
           <div
             key={idx}
@@ -131,18 +131,25 @@ export default function Slide12() {
             onTouchStart={() => handleStart(idx)}
             style={{
               ...styles.cell,
-              backgroundColor: selected.includes(idx) ? "#ff4757" : "#1e90ff",
+              backgroundColor: selected.includes(idx) ? "#ff6b81" : "#1e90ff",
             }}
           >
             {num}
           </div>
         ))}
       </div>
-      <div style={styles.info}>合計：{sum} ／ スコア：{score}</div>
-      <div style={{ ...styles.info, color: timeLeft <= 10 ? "red" : "#333" }}>
-        残り時間：{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+      <div style={styles.info}>合計: <strong>{sum}</strong> ／ スコア: <strong>{score}</strong></div>
+      <div
+        style={{
+          ...styles.info,
+          color: timeLeft <= 10 ? "#ff4757" : "#2f3542",
+        }}
+      >
+        残り時間: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
       </div>
-      <div style={{ marginTop: 10, fontWeight: "bold" }}>{message}</div>
+      <div style={{ marginTop: 10, fontWeight: "bold", color: "#2f3542" }}>
+        {message}
+      </div>
     </div>
   );
 }
@@ -154,10 +161,11 @@ const styles = {
     padding: 20,
     border: "2px solid #ccc",
     borderRadius: 12,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     textAlign: "center",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "'Segoe UI', sans-serif",
     userSelect: "none",
+    color: "#2f3542",
   },
   grid: {
     display: "grid",
@@ -166,19 +174,19 @@ const styles = {
     marginTop: 20,
   },
   cell: {
-    width: 70,
-    height: 70,
-    fontSize: 26,
+    width: 60,
+    height: 60,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
     borderRadius: 10,
+    color: "white",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     touchAction: "none",
   },
   info: {
-    marginTop: 16,
+    marginTop: 12,
     fontSize: 16,
   },
   button: {
@@ -186,9 +194,19 @@ const styles = {
     padding: "10px 20px",
     fontSize: 16,
     borderRadius: 8,
+    border: "none",
     backgroundColor: "#2ed573",
     color: "white",
-    border: "none",
     cursor: "pointer",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#3742fa",
+  },
+  text: {
+    fontSize: 18,
+    color: "#2f3542",
+    marginTop: 10,
   },
 };
