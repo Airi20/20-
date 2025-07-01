@@ -39,7 +39,7 @@ export default function Slide12() {
 
   const sum = selected.reduce((acc, idx) => acc + (board[idx] || 0), 0);
 
-  // prevent scroll on mobile
+  // スクロール禁止（スマホ含む）
   useEffect(() => {
     const preventScroll = (e) => e.preventDefault();
     document.body.style.overflow = "hidden";
@@ -50,6 +50,7 @@ export default function Slide12() {
     };
   }, []);
 
+  // タイマー処理
   useEffect(() => {
     if (timeLeft <= 0) {
       setGameOver(true);
@@ -59,6 +60,7 @@ export default function Slide12() {
     return () => clearTimeout(timer);
   }, [timeLeft]);
 
+  // シャッフル処理（12作れなかったら）
   useEffect(() => {
     if (!canMake12(board)) {
       setMessage("もう12作れないからシャッフル！🔄");
@@ -67,12 +69,14 @@ export default function Slide12() {
     }
   }, [board]);
 
+  // 選択開始
   const handleStart = (idx) => {
     if (gameOver) return;
     selectingRef.current = true;
     setSelected([idx]);
   };
 
+  // 選択中に隣接チェックしながら追加
   const handleEnter = (idx) => {
     if (!selectingRef.current || selected.includes(idx)) return;
     const lastIdx = selected[selected.length - 1];
@@ -81,6 +85,7 @@ export default function Slide12() {
     }
   };
 
+  // 選択終了時処理
   const handleEnd = () => {
     selectingRef.current = false;
     if (sum === 12 && selected.length > 0) {
@@ -91,10 +96,10 @@ export default function Slide12() {
       setSelected([]);
       setMessage("✨ナイス12✨");
 
-      // 振動（対応していれば）
+      // バイブレーションON（対応してれば）
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         try {
-          navigator.vibrate([100, 50, 100]);
+          navigator.vibrate([150, 100, 150]);
         } catch (e) {
           console.warn("Vibration not supported");
         }
@@ -106,6 +111,7 @@ export default function Slide12() {
     }
   };
 
+  // 再スタート
   const handleRestart = () => {
     setBoard(generateBoard());
     setSelected([]);
@@ -115,6 +121,7 @@ export default function Slide12() {
     setMessage("");
   };
 
+  // スワイプ操作用
   const handleTouchMove = (e) => {
     const touch = e.touches[0];
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -180,11 +187,13 @@ export default function Slide12() {
 
 const styles = {
   wrapper: {
-    minHeight: "100vh",
+    position: "fixed",
+    inset: 0,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f1f2f6",
+    userSelect: "none",
   },
   container: {
     width: "90%",
@@ -195,8 +204,8 @@ const styles = {
     backgroundColor: "#ffffff",
     textAlign: "center",
     fontFamily: "'Segoe UI', sans-serif",
-    userSelect: "none",
     color: "#2f3542",
+    userSelect: "none",
   },
   grid: {
     display: "grid",
