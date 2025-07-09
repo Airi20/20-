@@ -1,6 +1,10 @@
 ### 🔢 Make 12 by Connecting the Tiles!
 
-![Make 12](12.jpg)
+
+<div align="center">
+  <img src="12.jpg" alt="Make 12" width="300" />
+</div>
+
 
 Try this casual sliding puzzle game where your goal is simple:  
 **connect adjacent tiles to make a total of 12**!  
